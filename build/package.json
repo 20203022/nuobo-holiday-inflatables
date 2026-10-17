@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {"build": "node build.mjs"},
+  "dependencies": {"vue": "3.5.22", "element-plus": "2.11.5"},
+  "devDependencies": {"esbuild": "0.25.10"}
+}

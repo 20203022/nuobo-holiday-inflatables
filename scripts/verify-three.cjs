@@ -1,0 +1,52 @@
+async page => {
+  const errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+  await page.waitForFunction(()=>document.querySelector('.holiday-hero').dataset.sceneReady==='true');
+  await page.getByRole('button',{name:'Christmas',exact:true}).click();
+  await page.evaluate(()=>document.fonts.ready);
+  const result={layouts:[]};
+  const changed=(a,b)=>a.length!==b.length||a.some((value,i)=>value!==b[i]);
+  const canvas=page.locator('#nuobo-hero-scene');
+  const start=await canvas.screenshot({path:'output/three-scene-a.png'});
+  await page.waitForTimeout(700);
+  const next=await canvas.screenshot({path:'output/three-scene-b.png'});
+  result.heroAnimated=changed(start,next);
+  await page.getByRole('button',{name:'Pause scene',exact:true}).click();
+  const still=await canvas.screenshot();
+  await page.waitForTimeout(350);
+  result.heroPause=!changed(still,await canvas.screenshot());
+  await page.getByRole('button',{name:'Halloween',exact:true}).click();
+  await page.locator('.holiday-hero').screenshot({path:'output/three-halloween-1440.png'});
+  result.themeSwitch=await page.locator('[data-scene-products]').getAttribute('href')==='/category/halloween'&&changed(still,await canvas.screenshot());
+  await page.getByRole('button',{name:'Christmas',exact:true}).click();
+  await page.getByRole('button',{name:'Resume scene',exact:true}).click();
+  const beforePointer=await canvas.screenshot();
+  const box=await canvas.boundingBox();
+  await page.mouse.move(box.x+box.width*.9,box.y+box.height*.7);
+  await page.waitForTimeout(350);
+  result.pointerMotion=changed(beforePointer,await canvas.screenshot());
+  for(const viewport of [{width:1440,height:900},{width:1920,height:1080}]) {
+    await page.setViewportSize(viewport);
+    await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+    await page.locator('.holiday-hero').screenshot({path:'output/three-christmas-'+viewport.width+'.png'});
+    result.layouts.push({...viewport,...await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,height:document.documentElement.scrollHeight,canvas:document.querySelector('#nuobo-hero-scene').width,controlWidth:document.querySelector('.hero-scene-controls').getBoundingClientRect().width}))});
+  }
+  await page.locator('#global-reach').scrollIntoViewIfNeeded();
+  await page.waitForFunction(()=>document.querySelector('#global-reach').dataset.globeReady==='true');
+  await page.waitForFunction(()=>document.querySelector('.holiday-hero').dataset.sceneAnimating==='false');
+  result.offscreenStopped=await page.evaluate(()=>document.querySelector('.holiday-hero').getBoundingClientRect().bottom<0&&document.querySelector('.holiday-hero').dataset.sceneAnimating==='false');
+  await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.getByRole('button',{name:'Resume scene',exact:true}).waitFor();
+  await page.waitForFunction(()=>document.querySelector('.holiday-hero').dataset.sceneAnimating==='false');
+  await page.waitForTimeout(700);
+  const reduced=await canvas.screenshot({path:'output/three-reduced-a.png'});await page.waitForTimeout(300);
+  result.reducedMotion=!changed(reduced,await canvas.screenshot({path:'output/three-reduced-b.png'}));
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  result.errors=errors;
+  for(const [key,value]of Object.entries(result))if(typeof value==='boolean'&&!value)throw new Error(key+' failed');
+  if(errors.length)throw new Error(errors.join(';'));
+  return result;
+}

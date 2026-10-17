@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><body>
+<article th:fragment="card(p)" class="product-card">
+  <a th:href="@{/product/{id}(id=${p.id})}" class="card-img-link"><img class="card-img" th:src="${p.images != null && p.images.size() > 0} ? ${p.images[0].imagePath} : '/images/placeholder.svg'" th:alt="${p.model + ' ' + p.nameEn}" loading="lazy" decoding="async" width="400" height="400"></a>
+  <div class="card-body">
+    <div class="simple-card-topline"><span class="simple-card-category" th:text="${p.category.name() == 'CHRISTMAS' ? 'Christmas' : 'Halloween'}">Christmas</span><span th:text="${p.model}">Model</span></div>
+    <a class="card-title" th:href="@{/product/{id}(id=${p.id})}" th:text="${p.nameEn}">Product name</a>
+    <div class="card-price"><span th:if="${p.hasDiscount()}" class="original" th:text="'$' + ${#numbers.formatDecimal(p.originalPrice, 1, 2)}">$99</span><span th:text="'$' + ${#numbers.formatDecimal(p.displayPrice, 1, 2)}">$59</span></div>
+    <div class="simple-card-actions"><div class="simple-card-actions-right">
+      <button type="button" class="bulk-inquiry-add" aria-pressed="false" th:attr="data-product-id=${p.id},data-product-model=${p.model},data-product-name=${p.nameEn},data-product-image=${p.images != null && p.images.size() > 0 ? p.images[0].imagePath : '/images/placeholder.svg'}">Add to inquiry</button>
+      <form method="post" th:action="@{/cart/add}" th:if="${p.stock > 0}"><input type="hidden" name="productId" th:value="${p.id}"><input type="hidden" name="quantity" value="1"><button type="submit" class="btn btn-gold btn-sm">Add to cart</button></form>
+      <span class="home-sold-out" th:unless="${p.stock > 0}">Out of stock</span>
+    </div></div>
+  </div>
+</article>
+</body></html>

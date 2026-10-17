@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('产品管理')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('products')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Product Catalog</p>
+                <h1>产品管理</h1>
+                <p>维护产品图片、型号、分类、价格、库存和上下架状态。</p>
+            </div>
+            <a href="/admin/products/new" class="btn btn-gold btn-sm">新增产品</a>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="admin-card admin-table-card">
+            <div class="admin-card-toolbar">
+                <div>
+                    <h3 class="admin-card-title">产品列表</h3>
+                    <p th:text="'当前共 ' + ${#lists.size(products)} + ' 个产品'">当前共 0 个产品</p>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table admin-data-table product-admin-table">
+                    <thead>
+                    <tr>
+                        <th>图片</th>
+                        <th>产品</th>
+                        <th>分类</th>
+                        <th>价格</th>
+                        <th>库存</th>
+                        <th>销量</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${products}">
+                        <td>
+                            <img th:if="${p.images != null and p.images.size() > 0}" th:src="${p.images[0].imagePath}" class="admin-product-thumb" alt="">
+                            <span th:if="${p.images == null or p.images.size() == 0}" class="admin-product-thumb admin-product-thumb-empty">无图</span>
+                        </td>
+                        <td>
+                            <div class="admin-product-cell">
+                                <strong th:text="${p.nameCn != null && !#strings.isEmpty(p.nameCn) ? p.nameCn : p.nameEn}">产品名称</strong>
+                                <span th:text="${p.model}">型号</span>
+                            </div>
+                        </td>
+                        <td><span class="badge" th:text="${p.category.name() == 'CHRISTMAS' ? '圣诞' : '万圣节'}">分类</span></td>
+                        <td class="admin-money" th:text="'$' + ${#numbers.formatDecimal(p.displayPrice, 1, 2)}">$0</td>
+                        <td>
+                            <span class="badge" th:classappend="${p.stock < 10} ? 'badge-cancelled' : 'badge-paid'" th:text="${p.stock} + ' 件'">0 件</span>
+                        </td>
+                        <td th:text="${p.salesCount}">0</td>
+                        <td><span class="badge" th:classappend="${p.published} ? 'badge-paid' : 'badge-pending-payment'" th:text="${p.published} ? '已上架' : '未上架'">已上架</span></td>
+                        <td>
+                            <div class="admin-row-actions">
+                                <a th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="btn btn-outline btn-sm">编辑</a>
+                                <form th:action="@{/admin/products/delete/{id}(id=${p.id})}" method="post" onsubmit="return confirm('确认删除这个产品？')">
+                                    <button type="submit" class="btn btn-sm btn-danger-soft">删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(products)}">
+                        <td colspan="8" class="text-center text-gray-500 py-4">暂无产品</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

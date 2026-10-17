@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('内容管理')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('pages')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Content</p>
+                <h1>内容管理</h1>
+                <p>维护关于我们、常见问题、隐私政策和退货政策内容。</p>
+            </div>
+        </div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div class="admin-card admin-form-card">
+            <div class="admin-tab-bar">
+                <button class="page-tab btn btn-sm" th:classappend="${activePage == null or activePage == 'about'} ? 'btn-gold' : 'btn-outline'" onclick="switchPage('about', this)" type="button">关于我们</button>
+                <button class="page-tab btn btn-sm btn-outline" onclick="switchPage('faq', this)" type="button">常见问题</button>
+                <button class="page-tab btn btn-sm btn-outline" onclick="switchPage('privacy', this)" type="button">隐私政策</button>
+                <button class="page-tab btn btn-sm btn-outline" onclick="switchPage('return-policy', this)" type="button">退货政策</button>
+            </div>
+            <form method="post" action="/admin/pages" class="admin-stacked-form" id="pageForm">
+                <input type="hidden" name="pageKey" id="pageKey" th:value="${activePage ?: 'about'}">
+                <div>
+                    <label class="form-label">英文内容</label>
+                    <textarea name="contentEn" id="contentEn" class="textarea admin-content-textarea" rows="12" th:text="${about.contentEn}"></textarea>
+                </div>
+                <div>
+                    <label class="form-label">中文内容</label>
+                    <textarea name="contentCn" id="contentCn" class="textarea admin-content-textarea" rows="12" th:text="${about.contentCn}"></textarea>
+                </div>
+                <button type="submit" class="btn btn-gold">保存</button>
+            </form>
+        </div>
+    </main>
+</div>
+<script th:inline="javascript">
+function switchPage(key, button) {
+    document.getElementById('pageKey').value = key;
+    document.querySelectorAll('.page-tab').forEach(function(b) {
+        b.classList.remove('btn-gold');
+        b.classList.add('btn-outline');
+    });
+    button.classList.remove('btn-outline');
+    button.classList.add('btn-gold');
+    var enMap = {
+        about: /*[[${about.contentEn}]]*/ '',
+        faq: /*[[${faq.contentEn}]]*/ '',
+        privacy: /*[[${privacy.contentEn}]]*/ '',
+        'return-policy': /*[[${returnPolicy.contentEn}]]*/ ''
+    };
+    var cnMap = {
+        about: /*[[${about.contentCn}]]*/ '',
+        faq: /*[[${faq.contentCn}]]*/ '',
+        privacy: /*[[${privacy.contentCn}]]*/ '',
+        'return-policy': /*[[${returnPolicy.contentCn}]]*/ ''
+    };
+    document.getElementById('contentEn').value = enMap[key] || '';
+    document.getElementById('contentCn').value = cnMap[key] || '';
+}
+</script>
+</body>
+</html>

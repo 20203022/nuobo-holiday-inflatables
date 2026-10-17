@@ -1,0 +1,32 @@
+async page => {
+  const report={};
+  const card=page.locator('#panel-arrivals .product-card').filter({has:page.locator('form[action="/cart/add"]')}).first();
+  await card.getByRole('button',{name:'Add to cart',exact:true}).click();
+  await page.waitForURL('**/cart',{waitUntil:'domcontentloaded'});
+  await page.locator('.cart-qty-input').waitFor();
+  const total=async()=>Number((await page.locator('.cart-summary-total strong').innerText()).replace(/[^0-9.]/g,''));
+  const unit=Number(await page.locator('.cart-item-price').getAttribute('data-unit-price'));
+  await page.getByRole('button',{name:'Increase quantity',exact:true}).click();
+  report.cartRealtime=Math.abs(await total()-unit*2)<0.01;
+  await page.getByRole('button',{name:'Update',exact:true}).click();
+  await page.waitForURL('**/cart',{waitUntil:'domcontentloaded'});
+  await page.reload({waitUntil:'domcontentloaded'});
+  report.cartPersisted=await page.locator('.cart-qty-input').inputValue()==='2'&&Math.abs(await total()-unit*2)<0.01;
+  await page.getByRole('button',{name:'Remove item',exact:true}).click();
+  await page.locator('.cart-empty-state').waitFor();
+  await page.goto('https://nuobo.store/?editorial-preview',{waitUntil:'domcontentloaded'});
+  await page.locator('#panel-arrivals .bulk-inquiry-add').nth(0).click();
+  await page.locator('#panel-arrivals .bulk-inquiry-add').nth(1).click();
+  report.inquiryBadge=await page.locator('#inquiryNavCount').innerText()==='2';
+  await page.goto('https://nuobo.store/inquiry',{waitUntil:'domcontentloaded'});
+  await page.locator('.inquiry-product-row').first().waitFor();
+  report.multipleProducts=await page.locator('.inquiry-product-row').count()===2;
+  await page.locator('.inquiry-quantity-input').first().fill('12');
+  await page.locator('.inquiry-quantity-input').first().blur();
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.locator('.inquiry-quantity-input').first().waitFor();
+  report.inquiryQuantity=await page.locator('.inquiry-quantity-input').first().inputValue()==='12';
+  await page.getByRole('button',{name:'Clear all',exact:true}).click();
+  for(const [name,value]of Object.entries(report))if(!value)throw new Error(name+' failed');
+  return report;
+}

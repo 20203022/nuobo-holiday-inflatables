@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('优惠券')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('coupons')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Coupons</p>
+                <h1>优惠券</h1>
+                <p>管理折扣码、满减、免运费和使用次数。</p>
+            </div>
+            <a href="/admin/coupons/new" class="btn btn-gold btn-sm">新增优惠券</a>
+        </div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div class="admin-card admin-table-card">
+            <div class="admin-card-toolbar">
+                <div>
+                    <h3 class="admin-card-title">优惠券列表</h3>
+                    <p th:text="'当前共 ' + ${#lists.size(coupons)} + ' 张优惠券'">当前共 0 张优惠券</p>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table admin-data-table">
+                    <thead><tr><th>优惠码</th><th>类型</th><th>优惠值</th><th>最低订单</th><th>使用次数</th><th>状态</th><th>操作</th></tr></thead>
+                    <tbody>
+                    <tr th:each="c : ${coupons}">
+                        <td class="admin-order-link" th:text="${c.code}">CODE</td>
+                        <td th:text="${c.type.name() == 'FIXED_DISCOUNT' ? '固定金额优惠' : (c.type.name() == 'MINUS_15_OVER_100' ? '满 100 减 15' : '免运费')}">类型</td>
+                        <td th:text="${#numbers.formatDecimal(c.discountValue, 1, 2)}">0</td>
+                        <td th:text="${c.minOrderAmount != null ? '$' + #numbers.formatDecimal(c.minOrderAmount, 1, 2) : '不限'}">0</td>
+                        <td th:text="${c.usedCount} + '/' + ${c.maxUses}">0/1</td>
+                        <td><span class="badge" th:classappend="${c.active} ? 'badge-paid' : 'badge-cancelled'" th:text="${c.active} ? '启用' : '停用'">启用</span></td>
+                        <td><a th:href="@{/admin/coupons/edit/{id}(id=${c.id})}" class="btn btn-outline btn-sm">编辑</a></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(coupons)}"><td colspan="7" class="text-center text-gray-500 py-4">暂无优惠券</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

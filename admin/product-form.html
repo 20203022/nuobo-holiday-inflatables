@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('产品编辑')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('products')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <a href="/admin/products" class="back-link">&#8592; 返回产品列表</a>
+                <p class="eyebrow">Product Editor</p>
+                <h1 th:text="${product.id != null} ? '编辑产品' : '新增产品'">编辑产品</h1>
+                <p>维护产品资料、外贸卖点、SEO 内容、库存价格和展示图片。</p>
+            </div>
+            <div class="admin-head-actions">
+                <a th:if="${product.id != null}" th:href="@{/product/{id}(id=${product.id})}" target="_blank" class="btn btn-outline btn-sm">预览前台</a>
+                <button type="submit" form="productSaveForm" class="btn btn-gold btn-sm">保存产品</button>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="product-editor-layout">
+            <form id="productSaveForm" method="post" action="/admin/products/save" enctype="multipart/form-data" class="product-editor-main">
+                <input type="hidden" name="id" th:value="${product.id}">
+
+                <section class="admin-card product-edit-section">
+                    <div class="section-heading">
+                        <div>
+                            <h2>基础信息</h2>
+                            <p>名称、型号和分类会直接影响前台展示、搜索和采购沟通。</p>
+                        </div>
+                        <label class="admin-switch">
+                            <input type="checkbox" name="published" value="true" th:checked="${product.published}">
+                            <span></span>
+                            上架显示
+                        </label>
+                    </div>
+                    <div class="admin-form-grid two">
+                        <div>
+                            <label class="form-label">中文名称</label>
+                            <input type="text" name="nameCn" class="input" th:value="${product.nameCn}" required placeholder="例如：圣诞充气拱门">
+                        </div>
+                        <div>
+                            <label class="form-label">英文名称</label>
+                            <input type="text" name="nameEn" class="input" th:value="${product.nameEn}" required placeholder="Christmas Inflatable Arch">
+                        </div>
+                        <div>
+                            <label class="form-label">产品型号</label>
+                            <input type="text" name="model" class="input" th:value="${product.model}" required placeholder="NO-CH-001">
+                        </div>
+                        <div>
+                            <label class="form-label">产品分类</label>
+                            <select name="category" class="select" required>
+                                <option th:each="c : ${categories}" th:value="${c}" th:text="${c.name() == 'CHRISTMAS' ? '圣诞' : '万圣节'}" th:selected="${product.category == c}">圣诞</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-card product-edit-section">
+                    <div class="section-heading">
+                        <div>
+                            <h2>价格与库存</h2>
+                            <p>折扣价为空时，前台会使用原价作为展示价格。</p>
+                        </div>
+                    </div>
+                    <div class="admin-form-grid four">
+                        <div>
+                            <label class="form-label">原价（美元）</label>
+                            <input type="number" step="0.01" min="0" name="originalPrice" class="input" th:value="${product.originalPrice}" required data-product-price="original">
+                        </div>
+                        <div>
+                            <label class="form-label">折扣价（美元）</label>
+                            <input type="number" step="0.01" min="0" name="discountPrice" class="input" th:value="${product.discountPrice}" data-product-price="discount" placeholder="不填则无折扣">
+                        </div>
+                        <div>
+                            <label class="form-label">库存</label>
+                            <input type="number" min="0" name="stock" class="input" th:value="${product.stock}" required data-product-stock>
+                        </div>
+                        <div>
+                            <label class="form-label">尺寸信息</label>
+                            <input type="text" name="sizeInfo" class="input" th:value="${product.sizeInfo}" placeholder="L:1.45M W:0.75M H:1.80M">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-card product-edit-section">
+                    <div class="section-heading">
+                        <div>
+                            <h2>展示内容</h2>
+                            <p>用于产品详情页卖点、描述和买家决策信息。</p>
+                        </div>
+                    </div>
+                    <div class="admin-form-grid two">
+                        <div>
+                            <label class="form-label">英文卖点标签</label>
+                            <input type="text" name="featureTagsEn" class="input" th:value="${product.featureTagsEn}" placeholder="Rises & Falls, Rotates, Arms Move">
+                            <p class="field-hint">用英文逗号分隔，适合展示给海外采购商。</p>
+                        </div>
+                        <div>
+                            <label class="form-label">中文卖点标签</label>
+                            <input type="text" name="featureTagsCn" class="input" th:value="${product.featureTagsCn}" placeholder="可升降, 可旋转, 支持定制">
+                            <p class="field-hint">后台和中文内容可使用，建议与英文卖点保持一致。</p>
+                        </div>
+                        <div>
+                            <label class="form-label">英文描述</label>
+                            <textarea name="descriptionEn" class="textarea tall" th:text="${product.descriptionEn}" placeholder="Describe material, usage, packaging, MOQ and export advantages."></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">中文描述</label>
+                            <textarea name="descriptionCn" class="textarea tall" th:text="${product.descriptionCn}" placeholder="填写产品材质、场景、包装、起订量、定制说明等。"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-card product-edit-section">
+                    <div class="section-heading">
+                        <div>
+                            <h2>SEO 信息</h2>
+                            <p>建议标题 50-60 字符，描述 120-160 字符。</p>
+                        </div>
+                    </div>
+                    <div class="admin-form-grid two">
+                        <div>
+                            <label class="form-label">SEO 标题</label>
+                            <input type="text" name="seoTitle" class="input" th:value="${product.seoTitle}" placeholder="Wholesale Christmas Inflatable Decorations">
+                        </div>
+                        <div>
+                            <label class="form-label">SEO 描述</label>
+                            <input type="text" name="seoDescription" class="input" th:value="${product.seoDescription}" placeholder="Factory direct holiday inflatables with custom branding and export support.">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-card product-edit-section">
+                    <div class="section-heading">
+                        <div>
+                            <h2>上传新图片</h2>
+                            <p>支持一次上传多张图片，建议使用清晰产品实拍或白底图。</p>
+                        </div>
+                    </div>
+                    <label class="image-upload-drop">
+                        <input type="file" name="imageFiles" multiple accept="image/*" data-product-image-input>
+                        <span>选择图片或拖入上传</span>
+                        <small>推荐 1200 x 1200 以上，JPG/PNG/WebP</small>
+                    </label>
+                    <div class="upload-preview-grid" data-product-upload-preview></div>
+                </section>
+
+                <div class="product-edit-footer">
+                    <a href="/admin/products" class="btn btn-outline">取消</a>
+                    <button type="submit" class="btn btn-gold">保存产品</button>
+                </div>
+            </form>
+
+            <aside class="product-editor-side">
+                <section class="admin-card product-summary-card">
+                    <h3 class="admin-card-title">编辑摘要</h3>
+                    <div class="summary-rows">
+                        <div><span>当前售价</span><strong data-product-summary-price>$0.00</strong></div>
+                        <div><span>库存状态</span><strong data-product-summary-stock>0 件</strong></div>
+                        <div><span>展示状态</span><strong th:text="${product.published} ? '已上架' : '未上架'">已上架</strong></div>
+                    </div>
+                </section>
+
+                <section class="admin-card product-image-manager" th:if="${product.id != null}">
+                    <h3 class="admin-card-title">现有图片</h3>
+                    <p class="admin-muted" th:if="${product.images == null || product.images.isEmpty()}">暂无图片，保存上传后会显示在这里。</p>
+                    <div class="managed-image-grid" th:if="${product.images != null && !product.images.isEmpty()}">
+                        <article class="managed-image" th:each="img, iter : ${product.images}">
+                            <img th:src="${img.imagePath}" alt="">
+                            <div class="managed-image-meta">
+                                <span th:text="${img.primaryImage || iter.index == 0} ? '主图' : '展示图'">主图</span>
+                                <div>
+                                    <form th:if="${!img.primaryImage}" method="post" th:action="@{/admin/products/{productId}/images/{imageId}/primary(productId=${product.id}, imageId=${img.id})}">
+                                        <button type="submit">设为主图</button>
+                                    </form>
+                                    <form method="post" th:action="@{/admin/products/{productId}/images/{imageId}/delete(productId=${product.id}, imageId=${img.id})}" onsubmit="return confirm('确认删除这张图片？')">
+                                        <button type="submit" class="danger">删除</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="admin-card product-help-card">
+                    <h3 class="admin-card-title">填写建议</h3>
+                    <ul>
+                        <li>英文名称写清品类和核心场景，方便海外买家理解。</li>
+                        <li>卖点标签控制在 3-6 个，突出材质、动作、尺寸、定制。</li>
+                        <li>详情描述建议包含 MOQ、包装、插头规格、交期和认证。</li>
+                    </ul>
+                </section>
+            </aside>
+        </div>
+    </main>
+</div>
+</body>
+</html>

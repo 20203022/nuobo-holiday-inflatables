@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('网站设置')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('settings')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Site Settings</p>
+                <h1>网站设置</h1>
+                <p>维护网站名称、版权文字和基础展示信息。</p>
+            </div>
+        </div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div class="admin-card admin-form-card">
+            <form method="post" action="/admin/settings" class="admin-stacked-form">
+                <div>
+                    <label class="form-label">网站名称</label>
+                    <input type="text" name="siteName" class="input" th:value="${siteName}" required>
+                </div>
+                <div>
+                    <label class="form-label">版权文字</label>
+                    <input type="text" name="siteCopyright" class="input" th:value="${siteCopyright}" required>
+                </div>
+                <button type="submit" class="btn btn-gold">保存</button>
+            </form>
+        </div>
+    </main>
+</div>
+</body>
+</html>

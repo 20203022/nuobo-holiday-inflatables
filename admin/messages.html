@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('询盘线索')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('messages')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Lead CRM</p>
+                <h1>询盘线索</h1>
+                <p>统一管理联系表单、产品询盘、批量报价清单和 AI 客服留下的客户线索。</p>
+            </div>
+            <div class="admin-head-actions">
+                <a href="/admin/messages" class="btn btn-outline btn-sm">全部线索</a>
+                <a href="/admin/messages?status=NEW" class="btn btn-gold btn-sm">新线索</a>
+            </div>
+        </div>
+
+        <div class="stats-grid admin-mini-stats">
+            <div class="stat-card"><div class="stat-value" th:text="${#lists.size(messages)}">0</div><div class="stat-label">当前列表</div></div>
+            <div class="stat-card"><div class="stat-value" th:text="${newLeadCount}">0</div><div class="stat-label">新线索</div></div>
+            <div class="stat-card" th:classappend="${overdueLeadCount > 0} ? 'stat-danger' : ''"><div class="stat-value" th:text="${overdueLeadCount}">0</div><div class="stat-label">超过 24 小时未处理</div></div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="admin-card admin-table-card">
+            <div class="admin-card-toolbar">
+                <div>
+                    <h3 class="admin-card-title">客户跟进池</h3>
+                    <p th:text="${'当前筛选：' + ((selectedStatus == null || #strings.isEmpty(selectedStatus)) ? '全部' : selectedStatus)}">当前筛选：全部</p>
+                </div>
+                <div class="admin-filter-bar">
+                    <form method="get" action="/admin/messages" class="admin-inline-form"><input type="hidden" name="status" th:value="${selectedStatus}"><input type="search" name="q" class="input" th:value="${selectedQuery}" placeholder="搜索客户、邮箱、公司或产品"><button type="submit" class="btn btn-outline btn-sm">搜索</button></form>
+                    <a th:href="@{/admin/messages/export(status=${selectedStatus},q=${selectedQuery})}" class="btn btn-outline btn-sm">导出 CSV</a>
+                    <a href="/admin/messages" class="btn btn-sm" th:classappend="${selectedStatus == null || #strings.isEmpty(selectedStatus)} ? 'btn-gold' : 'btn-outline'">全部</a>
+                    <a href="/admin/messages?status=NEW" class="btn btn-sm" th:classappend="${selectedStatus == 'NEW'} ? 'btn-gold' : 'btn-outline'">新线索</a>
+                    <a href="/admin/messages?status=CONTACTED" class="btn btn-sm" th:classappend="${selectedStatus == 'CONTACTED'} ? 'btn-gold' : 'btn-outline'">已联系</a>
+                    <a href="/admin/messages?status=QUOTED" class="btn btn-sm" th:classappend="${selectedStatus == 'QUOTED'} ? 'btn-gold' : 'btn-outline'">已报价</a>
+                    <a href="/admin/messages?status=WON" class="btn btn-sm" th:classappend="${selectedStatus == 'WON'} ? 'btn-gold' : 'btn-outline'">已成交</a>
+                    <a href="/admin/messages?status=LOST" class="btn btn-sm" th:classappend="${selectedStatus == 'LOST'} ? 'btn-gold' : 'btn-outline'">未成交</a>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table admin-data-table admin-lead-table">
+                    <thead><tr><th>状态</th><th>客户</th><th>询价产品</th><th>联系方式</th><th>客户需求</th><th>来源</th><th>日期</th><th>操作</th></tr></thead>
+                    <tbody>
+                    <tr th:each="m : ${messages}" th:classappend="${m.status == 'NEW' && m.createdAt.isBefore(T(java.time.LocalDateTime).now().minusHours(24))} ? 'admin-overdue-row' : (${!m.read} ? 'admin-unread-row' : '')">
+                        <td><span class="badge" th:classappend="${m.status == 'NEW'} ? 'badge-pending-payment' : 'badge-paid'" th:text="${m.status != null ? m.status : 'NEW'}">NEW</span></td>
+                        <td>
+                            <div class="admin-customer-cell">
+                                <strong th:text="${m.name}">客户</strong>
+                                <span th:text="${m.company != null && !#strings.isEmpty(m.company) ? m.company : '未填写公司'}">公司</span>
+                                <small th:if="${m.country != null && !#strings.isEmpty(m.country)}" th:text="${m.country}">国家</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="admin-lead-product">
+                                <a th:if="${m.productId != null}" th:href="@{/product/{id}(id=${m.productId})}" class="admin-order-link admin-lead-model" target="_blank" th:text="${m.productModel != null && !#strings.isEmpty(m.productModel) ? m.productModel : '查看产品'}">产品型号</a>
+                                <span th:if="${m.productId != null}" th:text="'产品ID：' + ${m.productId}">产品ID</span>
+                                <strong th:if="${m.productId == null}" class="admin-lead-model" th:text="${m.productModel != null && !#strings.isEmpty(m.productModel) ? m.productModel : '普通咨询'}">普通咨询</strong>
+                                <span th:if="${m.productName != null && !#strings.isEmpty(m.productName)}" th:text="${m.productName}">产品名称</span>
+                                <span th:if="${m.inquiryQuantity != null}" th:text="'数量：' + ${m.inquiryQuantity}">数量</span>
+                                <a th:if="${m.pageUrl != null && !#strings.isEmpty(m.pageUrl)}" th:href="${m.pageUrl}" target="_blank">打开来源页面</a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="admin-customer-cell">
+                                <a th:href="'mailto:' + ${m.email}" class="admin-order-link" th:text="${m.email}">Email</a>
+                                <span th:if="${m.phone != null && !#strings.isEmpty(m.phone)}" th:text="${m.phone}">电话</span>
+                            </div>
+                        </td>
+                        <td class="admin-message-text admin-lead-message"><span th:text="${m.message}">留言</span><small th:if="${m.internalNote}" th:text="'备注：' + ${m.internalNote}">备注</small></td>
+                        <td><span class="badge badge-pending-payment" th:text="${m.source != null && !#strings.isEmpty(m.source) ? m.source : 'CONTACT'}">CONTACT</span></td>
+                        <td class="text-gray-500" th:text="${#temporals.format(m.createdAt, 'yyyy-MM-dd HH:mm')}">日期</td>
+                        <td>
+                            <div class="admin-row-actions">
+                                <form method="post" th:action="@{/admin/messages/status/{id}(id=${m.id})}" class="admin-inline-form">
+                                    <select name="status" class="select">
+                                        <option value="NEW" th:selected="${m.status == null || m.status == 'NEW'}">新线索</option>
+                                        <option value="CONTACTED" th:selected="${m.status == 'CONTACTED'}">已联系</option>
+                                        <option value="QUOTED" th:selected="${m.status == 'QUOTED'}">已报价</option>
+                                        <option value="WON" th:selected="${m.status == 'WON'}">已成交</option>
+                                        <option value="LOST" th:selected="${m.status == 'LOST'}">未成交</option>
+                                    </select>
+                                    <input type="text" name="internalNote" class="input" placeholder="内部备注" th:value="${m.internalNote}">
+                                    <button type="submit" class="btn btn-outline btn-sm">保存</button>
+                                </form>
+                                <form th:if="${!m.read}" method="post" th:action="@{/admin/messages/read/{id}(id=${m.id})}">
+                                    <button type="submit" class="btn btn-outline btn-sm">标为已读</button>
+                                </form>
+                                <form method="post" th:action="@{/admin/messages/delete/{id}(id=${m.id})}" onsubmit="return confirm('确定删除这条线索吗？')">
+                                    <button type="submit" class="btn btn-sm btn-danger-soft">删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(messages)}"><td colspan="8" class="text-center text-gray-500 py-4">暂无线索</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

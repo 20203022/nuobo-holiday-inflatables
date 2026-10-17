@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('优惠券表单')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('coupons')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <a href="/admin/coupons" class="back-link">&#8592; 返回优惠券列表</a>
+                <p class="eyebrow">Coupon Form</p>
+                <h1>优惠券表单</h1>
+                <p>设置优惠码、优惠类型、最低订单金额和使用上限。</p>
+            </div>
+        </div>
+        <div class="admin-card admin-form-card">
+            <form method="post" action="/admin/coupons/save" class="admin-stacked-form">
+                <input type="hidden" name="id" th:value="${coupon.id}">
+                <div class="admin-form-grid two">
+                    <div>
+                        <label class="form-label">优惠码</label>
+                        <input type="text" name="code" class="input" th:value="${coupon.code}" required placeholder="例如：NUOBO15">
+                    </div>
+                    <div>
+                        <label class="form-label">优惠类型</label>
+                        <select name="type" class="select">
+                            <option th:each="t : ${types}" th:value="${t}" th:text="${t.name() == 'FIXED_DISCOUNT' ? '固定金额优惠' : (t.name() == 'MINUS_15_OVER_100' ? '满 100 减 15' : '免运费')}" th:selected="${coupon.type == t}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">优惠值（美元）</label>
+                        <input type="number" step="0.01" name="discountValue" class="input" th:value="${coupon.discountValue}">
+                    </div>
+                    <div>
+                        <label class="form-label">最低订单金额（美元）</label>
+                        <input type="number" step="0.01" name="minOrderAmount" class="input" th:value="${coupon.minOrderAmount}">
+                    </div>
+                    <div>
+                        <label class="form-label">最大使用次数</label>
+                        <input type="number" name="maxUses" class="input" th:value="${coupon.maxUses}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-gold">保存</button>
+            </form>
+        </div>
+    </main>
+</div>
+</body>
+</html>

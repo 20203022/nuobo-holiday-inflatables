@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('订单管理')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('orders')"></div>
+    <main class="admin-main">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Order Operations</p>
+                <h1>订单管理</h1>
+                <p>查看订单状态、客户信息、金额和后续处理入口。</p>
+            </div>
+            <a href="/admin/dashboard" class="btn btn-outline btn-sm">返回仪表盘</a>
+        </div>
+
+        <div class="admin-filter-bar admin-filter-enhanced">
+            <a th:href="@{/admin/orders}" class="btn btn-sm" th:classappend="${param.status == null} ? 'btn-gold' : 'btn-outline'">全部订单</a>
+            <a th:href="@{/admin/orders(status='PENDING_PAYMENT')}" class="btn btn-sm" th:classappend="${param.status != null && param.status[0] == 'PENDING_PAYMENT'} ? 'btn-gold' : 'btn-outline'">待支付</a>
+            <a th:href="@{/admin/orders(status='PAID')}" class="btn btn-sm" th:classappend="${param.status != null && param.status[0] == 'PAID'} ? 'btn-gold' : 'btn-outline'">已付款</a>
+            <a th:href="@{/admin/orders(status='SHIPPED')}" class="btn btn-sm" th:classappend="${param.status != null && param.status[0] == 'SHIPPED'} ? 'btn-gold' : 'btn-outline'">已发货</a>
+            <a th:href="@{/admin/orders(status='DELIVERED')}" class="btn btn-sm" th:classappend="${param.status != null && param.status[0] == 'DELIVERED'} ? 'btn-gold' : 'btn-outline'">已送达</a>
+            <a th:href="@{/admin/orders(status='CANCELLED')}" class="btn btn-sm" th:classappend="${param.status != null && param.status[0] == 'CANCELLED'} ? 'btn-gold' : 'btn-outline'">已取消</a>
+        </div>
+
+        <div class="admin-card admin-table-card">
+            <div class="admin-card-toolbar">
+                <div>
+                    <h3 class="admin-card-title">订单列表</h3>
+                    <p th:text="'当前共 ' + ${#lists.size(orders)} + ' 个订单'">当前共 0 个订单</p>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table admin-data-table">
+                    <thead>
+                    <tr>
+                        <th>订单号</th>
+                        <th>客户</th>
+                        <th>金额</th>
+                        <th>状态</th>
+                        <th>下单时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td>
+                            <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="admin-order-link" th:text="${order.orderNo}">NUOBO-001</a>
+                        </td>
+                        <td>
+                            <div class="admin-customer-cell">
+                                <strong th:text="${order.user.name}">客户</strong>
+                                <span th:text="${order.user.email}">email@example.com</span>
+                            </div>
+                        </td>
+                        <td class="admin-money" th:text="'$' + ${#numbers.formatDecimal(order.total, 1, 2)}">$0</td>
+                        <td>
+                            <span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(order.status)}" th:text="${order.status.name() == 'PENDING_PAYMENT' ? '待支付' : (order.status.name() == 'PAID' ? '已付款' : (order.status.name() == 'SHIPPED' ? '已发货' : (order.status.name() == 'DELIVERED' ? '已送达' : (order.status.name() == 'CANCELLED' ? '已取消' : '已退款'))))}">状态</span>
+                        </td>
+                        <td class="text-gray-500" th:text="${#temporals.format(order.createdAt, 'yyyy-MM-dd HH:mm')}">日期</td>
+                        <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-outline btn-sm">查看</a></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(orders)}">
+                        <td colspan="6" class="text-center text-gray-500 py-4">暂无订单</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('My Account')"></head>
+<body class="bg-dark text-white">
+<div id="app" class="min-h-screen flex flex-col">
+    <header th:replace="layout::navbar"></header>
+    <main class="flex-1">
+        <section class="section account-page">
+            <div class="container">
+                <div class="account-shell">
+                    <aside class="account-sidebar fade-in">
+                        <div class="account-profile-block">
+                            <img th:if="${user.avatar != null}" th:src="${user.avatar}" alt="" class="account-avatar account-avatar-lg">
+                            <span th:if="${user.avatar == null}" class="account-avatar-placeholder account-avatar-lg">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </span>
+                            <div>
+                                <p class="account-kicker">Buyer Center</p>
+                                <h1 class="account-name" th:text="${user.name}">Name</h1>
+                                <p class="account-email" th:text="${user.email}">Email</p>
+                            </div>
+                        </div>
+                        <nav class="account-nav">
+                            <a href="/account" class="active">
+                                <span class="account-nav-icon">01</span><span>Overview</span>
+                            </a>
+                            <a href="/account/orders">
+                                <span class="account-nav-icon">02</span><span th:text="#{account.orders}">My Orders</span>
+                            </a>
+                            <a href="/account/profile">
+                                <span class="account-nav-icon">03</span><span>Profile</span>
+                            </a>
+                            <a href="/account/addresses">
+                                <span class="account-nav-icon">04</span><span th:text="#{account.addresses}">Addresses</span>
+                            </a>
+                            <a href="/account/password">
+                                <span class="account-nav-icon">05</span><span th:text="#{account.password}">Password</span>
+                            </a>
+                        </nav>
+                    </aside>
+
+                    <div class="account-main">
+                        <div class="account-hero fade-in">
+                            <div>
+                                <p class="eyebrow">nuobo Account</p>
+                                <h2>Manage quotations, orders, and holiday buying details.</h2>
+                                <p>Keep shipping information ready, track recent purchases, and return to product selection when planning the next holiday campaign.</p>
+                            </div>
+                            <a href="/products" class="btn btn-gold">Browse Products</a>
+                        </div>
+
+                        <div class="account-stat-grid fade-in">
+                            <div class="account-stat-card">
+                                <span th:text="${#lists.size(orders)}">0</span>
+                                <p>Total Orders</p>
+                            </div>
+                            <div class="account-stat-card">
+                                <span th:text="${user.shippingAddress != null && !#strings.isEmpty(user.shippingAddress) ? 'Ready' : 'Missing'}">Ready</span>
+                                <p>Shipping Profile</p>
+                            </div>
+                            <div class="account-stat-card">
+                                <span th:text="${user.emailVerified ? 'Verified' : 'Pending'}">Verified</span>
+                                <p>Email Status</p>
+                            </div>
+                        </div>
+
+                        <div class="profile-card fade-in account-panel">
+                            <div class="account-panel-head">
+                                <div>
+                                    <p class="eyebrow">Quick Actions</p>
+                                    <h3>Common account tasks</h3>
+                                </div>
+                            </div>
+                            <div class="account-action-grid">
+                                <a href="/account/orders" class="account-action-card">
+                                    <span>Orders</span>
+                                    <p>View payment status, shipment information, and order details.</p>
+                                </a>
+                                <a href="/account/addresses" class="account-action-card">
+                                    <span>Address</span>
+                                    <p>Prepare buyer contact and delivery information before checkout.</p>
+                                </a>
+                                <a href="/account/profile" class="account-action-card">
+                                    <span>Profile</span>
+                                    <p>Update company name, phone number, and account avatar.</p>
+                                </a>
+                                <a href="/contact" class="account-action-card">
+                                    <span>Inquiry</span>
+                                    <p>Send product questions or request wholesale sourcing support.</p>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="profile-card fade-in account-panel">
+                            <div class="account-panel-head">
+                                <div>
+                                    <p class="eyebrow">Recent Orders</p>
+                                    <h3 th:text="#{account.orders}">My Orders</h3>
+                                </div>
+                                <a href="/account/orders" class="btn btn-outline btn-sm" th:if="${#lists.size(orders) > 0}">View All</a>
+                            </div>
+                            <div th:if="${#lists.size(orders) == 0}" class="account-empty-state">
+                                <h4 th:text="#{account.noOrders}">No orders yet</h4>
+                                <p>Start from the product catalog and save holiday inflatable models to your cart.</p>
+                                <a href="/products" class="btn btn-gold btn-sm">Explore Products</a>
+                            </div>
+                            <div class="account-order-list" th:if="${#lists.size(orders) > 0}">
+                                <a th:each="order : ${orders}" th:href="@{'/account/orders/' + ${order.id}}" class="account-order-card">
+                                    <div>
+                                        <p class="order-no" th:text="${order.orderNo}">Order No</p>
+                                        <p class="order-date" th:text="${#temporals.format(order.createdAt, 'yyyy-MM-dd HH:mm')}">Date</p>
+                                    </div>
+                                    <div class="account-order-meta">
+                                        <span class="order-status" th:classappend="'order-status-' + ${#strings.toLowerCase(order.status)}" th:text="${order.status.name() == 'PENDING_PAYMENT' ? 'Pending Payment' : (order.status.name() == 'PAID' ? 'Paid' : (order.status.name() == 'SHIPPED' ? 'Shipped' : (order.status.name() == 'DELIVERED' ? 'Delivered' : (order.status.name() == 'CANCELLED' ? 'Cancelled' : 'Refunded'))))}">Status</span>
+                                        <p class="order-total" th:text="'$' + ${#numbers.formatDecimal(order.total, 1, 2)}">$0</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer th:replace="layout::footer"></footer>
+</div>
+</body>
+</html>

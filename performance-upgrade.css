@@ -1,0 +1,6 @@
+@media (min-width: 821px) {
+  .home-holidays,.home-story,.world-stage,.home-custom {
+    content-visibility: auto;
+    contain-intrinsic-size: 800px;
+  }
+}

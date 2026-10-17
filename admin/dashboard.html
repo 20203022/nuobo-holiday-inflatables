@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout::head('管理后台')}"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments::sidebar('dashboard')}"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head admin-hero-panel">
+            <div>
+                <p class="eyebrow">Dashboard</p>
+                <h1>运营仪表盘</h1>
+                <p>快速查看订单、询盘、库存、热门产品和最近业务动态。</p>
+            </div>
+            <div class="admin-head-actions">
+                <a href="/admin/products/new" class="btn btn-gold btn-sm">新增产品</a>
+                <a href="/admin/messages" class="btn btn-outline btn-sm">查看线索</a>
+            </div>
+        </div>
+
+        <div class="stats-grid admin-mini-stats">
+            <div class="stat-card"><div class="stat-value" th:text="${todayOrders}">0</div><div class="stat-label">已付款订单</div></div>
+            <div class="stat-card"><div class="stat-value" th:text="${totalOrders}">0</div><div class="stat-label">订单总数</div></div>
+            <div class="stat-card"><div class="stat-value" th:text="${todayLeads}">0</div><div class="stat-label">今日询盘</div></div>
+            <div class="stat-card" th:classappend="${overdueLeads > 0} ? 'stat-danger' : ''"><div class="stat-value" th:text="${overdueLeads}">0</div><div class="stat-label">超时未跟进</div></div>
+            <div class="stat-card"><div class="stat-value" th:text="${totalUsers}">0</div><div class="stat-label">注册用户</div></div>
+            <div class="stat-card"><div class="stat-value" th:text="${analyticsToday['productViews']}">0</div><div class="stat-label">今日产品浏览</div></div>
+            <div class="stat-card"><div class="stat-value" th:text="${analyticsToday['cartAdds']}">0</div><div class="stat-label">今日加入购物车</div></div>
+        </div>
+
+        <div class="admin-dashboard-grid">
+            <section class="admin-card admin-table-card">
+                <div class="admin-card-toolbar">
+                    <div>
+                        <h3 class="admin-card-title">最近询盘</h3>
+                        <p>优先跟进新线索和超过 24 小时未处理的客户。</p>
+                    </div>
+                    <a href="/admin/messages" class="btn btn-outline btn-sm">全部线索</a>
+                </div>
+                <div class="table-container">
+                    <table class="table admin-data-table">
+                        <thead><tr><th>客户</th><th>产品</th><th>状态</th><th>来源</th><th>日期</th></tr></thead>
+                        <tbody>
+                        <tr th:each="m : ${recentLeads}" th:classappend="${m.status == 'NEW' && m.createdAt.isBefore(T(java.time.LocalDateTime).now().minusHours(24))} ? 'admin-overdue-row' : ''">
+                            <td><a th:href="'mailto:' + ${m.email}" class="admin-order-link" th:text="${m.name}">客户</a></td>
+                            <td th:text="${m.productModel != null ? m.productModel : '普通询盘'}">产品</td>
+                            <td><span class="badge" th:classappend="${m.status == 'NEW'} ? 'badge-pending-payment' : 'badge-paid'" th:text="${m.status}">NEW</span></td>
+                            <td th:text="${m.source}">来源</td>
+                            <td class="text-gray-500" th:text="${#temporals.format(m.createdAt, 'MM-dd HH:mm')}">日期</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentLeads)}"><td colspan="5" class="text-center text-gray-500 py-4">暂无线索</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="admin-card admin-alert-card-refresh" th:classappend="${#lists.size(products) == 0} ? 'is-empty' : ''">
+                <div class="admin-card-toolbar">
+                    <div>
+                        <h3 class="admin-card-title">库存提醒</h3>
+                        <p>库存低于 10 的产品会显示在这里。</p>
+                    </div>
+                </div>
+                <div th:if="${#lists.size(products) == 0}" class="admin-empty-compact">
+                    <strong>库存状态良好</strong>
+                    <span>当前没有低库存产品。</span>
+                </div>
+                <div class="admin-stock-list" th:if="${#lists.size(products) > 0}">
+                    <a th:each="p : ${products}" th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="admin-stock-item">
+                        <span th:text="${p.nameCn != null && !#strings.isEmpty(p.nameCn) ? p.nameCn : p.nameEn}">产品</span>
+                        <strong th:text="${p.stock} + ' 件'">0 件</strong>
+                    </a>
+                </div>
+            </aside>
+        </div>
+
+        <div class="admin-dashboard-grid">
+            <section class="admin-card admin-table-card">
+                <div class="admin-card-toolbar"><div><h3 class="admin-card-title">产品资料完整度</h3><p>优先补充图片、尺寸、标签和英文描述。</p></div><a href="/admin/products" class="btn btn-outline btn-sm">管理产品</a></div>
+                <div class="admin-stock-list">
+                    <a th:each="p : ${incompleteProducts}" th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="admin-stock-item"><span th:text="${p.model + ' · ' + p.nameEn}">Model · Product</span><strong th:text="${(p.nameEn != null ? 17 : 0) + (p.descriptionEn != null ? 17 : 0) + (p.sizeInfo != null ? 17 : 0) + (p.featureTagsEn != null ? 17 : 0) + (p.images != null && !#lists.isEmpty(p.images) ? 16 : 0) + (p.originalPrice > 0 ? 16 : 0)} + '%'">50%</strong></a>
+                    <div th:if="${#lists.isEmpty(incompleteProducts)}" class="admin-empty-compact"><strong>产品资料已基本完整</strong><span>当前没有低于完整度阈值的产品。</span></div>
+                </div>
+            </section>
+            <aside class="admin-card admin-alert-card-refresh">
+                <div class="admin-card-toolbar"><div><h3 class="admin-card-title">今日行为</h3><p>只记录页面、产品、购物车和询盘事件。</p></div></div>
+                <div class="admin-detail-list"><div><span>全部事件</span><strong th:text="${analyticsToday['events']}">0</strong></div><div><span>产品浏览</span><strong th:text="${analyticsToday['productViews']}">0</strong></div><div><span>询盘提交</span><strong th:text="${analyticsToday['inquiries']}">0</strong></div></div>
+            </aside>
+        </div>
+
+        <div class="admin-dashboard-grid">
+            <section class="admin-card admin-table-card">
+                <div class="admin-card-toolbar">
+                    <div>
+                        <h3 class="admin-card-title">最近订单</h3>
+                        <p>跟进付款、发货和客户沟通。</p>
+                    </div>
+                    <a href="/admin/orders" class="btn btn-outline btn-sm">全部订单</a>
+                </div>
+                <div class="table-container">
+                    <table class="table admin-data-table">
+                        <thead><tr><th>订单号</th><th>客户</th><th>金额</th><th>状态</th><th>日期</th></tr></thead>
+                        <tbody>
+                        <tr th:each="order : ${recentOrders}">
+                            <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" class="admin-order-link" th:text="${order.orderNo}">NUOBO-001</a></td>
+                            <td th:text="${order.user.name}">客户</td>
+                            <td class="admin-money" th:text="'$' + ${#numbers.formatDecimal(order.total, 1, 2)}">$0</td>
+                            <td><span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(order.status)}" th:text="${order.status.name()}">状态</span></td>
+                            <td class="text-gray-500" th:text="${#temporals.format(order.createdAt, 'yyyy-MM-dd')}">日期</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentOrders)}"><td colspan="5" class="text-center text-gray-500 py-4">暂无订单</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="admin-card admin-table-card">
+                <div class="admin-card-toolbar">
+                    <div>
+                        <h3 class="admin-card-title">热门产品</h3>
+                        <p>按销量排序，便于判断主推款。</p>
+                    </div>
+                </div>
+                <div class="admin-stock-list">
+                    <a th:each="p : ${hotProducts}" th:href="@{/admin/products/edit/{id}(id=${p.id})}" class="admin-stock-item">
+                        <span th:text="${p.model}">Model</span>
+                        <strong th:text="${p.salesCount} + ' sold'">0 sold</strong>
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </main>
+</div>
+</body>
+</html>

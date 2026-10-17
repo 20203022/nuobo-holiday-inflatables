@@ -1,0 +1,36 @@
+# Local dependencies and generated frontend bundles
+build/node_modules/
+build/dist/
+node_modules/
+
+# Local test output, browser sessions, generated archives and screenshots
+output/
+.playwright-cli/
+scripts/__pycache__/
+*.pyc
+*.zip
+*.jar
+
+# Local IDE and OS files
+.agents/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Environment and secret material
+.env
+.env.*
+!.env.example
+application-local.yml
+application-local.properties
+
+# Host-specific deployment helpers contain private infrastructure details
+scripts/deploy-*.py
+scripts/fetch-upgrade-source.py
+scripts/inspect-*.py
+scripts/remote-*.py
+scripts/check-auth-nav.py
+scripts/verify-payment-disabled.py
+scripts/verify-performance-server.py

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('用户管理')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('users')"></div>
+    <main class="admin-main">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Customer Accounts</p>
+                <h1>用户管理</h1>
+                <p>查看注册客户、联系方式、账号状态和默认收货信息。</p>
+            </div>
+        </div>
+
+        <div class="stats-grid admin-mini-stats">
+            <div class="stat-card">
+                <div class="stat-value" th:text="${#lists.size(users)}">0</div>
+                <div class="stat-label">注册用户</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" th:text="${adminCount}">0</div>
+                <div class="stat-label">管理员</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" th:text="${activeCount}">0</div>
+                <div class="stat-label">启用账号</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" th:text="${verifiedCount}">0</div>
+                <div class="stat-label">邮箱已验证</div>
+            </div>
+        </div>
+
+        <div class="admin-card admin-table-card">
+            <div class="admin-card-toolbar">
+                <div>
+                    <h3 class="admin-card-title">用户列表</h3>
+                    <p>客户资料用于订单跟进、报价沟通和售后联系。</p>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table admin-data-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>客户</th>
+                        <th>联系方式</th>
+                        <th>默认地址</th>
+                        <th>账号状态</th>
+                        <th>注册时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="u : ${users}">
+                        <td class="text-sm text-gray-500" th:text="${u.id}">1</td>
+                        <td>
+                            <div class="admin-user-cell">
+                                <img th:if="${u.avatar != null}" th:src="${u.avatar}" alt="" class="admin-user-avatar">
+                                <span th:if="${u.avatar == null}" class="admin-user-avatar admin-user-avatar-placeholder" th:text="${#strings.substring(u.name, 0, 1)}">N</span>
+                                <div>
+                                    <strong th:text="${u.name}">姓名</strong>
+                                    <span th:if="${u.admin}" class="badge badge-paid">管理员</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="admin-customer-cell">
+                                <strong th:text="${u.email}">邮箱</strong>
+                                <span th:text="${u.phone}">电话</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="admin-address-preview" th:if="${u.shippingAddress != null && !#strings.isEmpty(u.shippingAddress)}" th:text="${u.shippingAddress + ', ' + u.shippingCity + ', ' + u.shippingState + ' ' + u.shippingZip}">地址</span>
+                            <span class="text-gray-500" th:if="${u.shippingAddress == null || #strings.isEmpty(u.shippingAddress)}">未填写</span>
+                        </td>
+                        <td>
+                            <div class="admin-status-stack">
+                                <span class="badge" th:classappend="${u.active} ? 'badge-paid' : 'badge-cancelled'" th:text="${u.active} ? '已启用' : '已停用'">状态</span>
+                                <span class="badge" th:classappend="${u.emailVerified} ? 'badge-shipped' : 'badge-pending-payment'" th:text="${u.emailVerified} ? '邮箱已验证' : '邮箱未验证'">邮箱</span>
+                            </div>
+                        </td>
+                        <td class="text-sm text-gray-500" th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd')}">日期</td>
+                        <td>
+                            <div class="admin-row-actions">
+                                <form method="post" th:action="@{/admin/users/{id}/active(id=${u.id})}">
+                                    <input type="hidden" name="active" th:value="${!u.active}">
+                                    <button type="submit" class="btn btn-outline btn-sm" th:text="${u.active} ? '停用' : '启用'">状态</button>
+                                </form>
+                                <form method="post" th:action="@{/admin/users/{id}/password(id=${u.id})}" class="admin-inline-form" onsubmit="return confirm('确认重置该用户密码？')">
+                                    <input type="password" name="password" class="input" placeholder="新密码" minlength="8" required>
+                                    <button type="submit" class="btn btn-sm btn-gold">重置密码</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="7" class="text-center text-gray-500 py-4">暂无用户</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:lang="${#locale.language}">
+<head th:fragment="head(title)"
+      th:with="pageTitle=${title == null || #strings.isEmpty(title) ? 'Wholesale Holiday Inflatables Manufacturer | Nuobo' : (#strings.contains(#strings.toLowerCase(title), 'nuobo') ? title : title + ' | Nuobo')}, pageDescription=${seoDescription ?: 'Nuobo manufactures wholesale Christmas and Halloween inflatables for retailers, importers, event buyers, and online sellers.'}, pageUrl=${canonicalUrl ?: 'https://nuobo.store/'}, pageImage=${seoImage ?: 'https://nuobo.store/images/company/festival-collections-catalog.png'}, pageType=${ogType ?: 'website'}, pageRobots=${robots ?: 'index,follow'}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle}">Wholesale Holiday Inflatables Manufacturer | Nuobo</title>
+    <meta name="description" th:content="${pageDescription}">
+    <meta name="robots" th:content="${pageRobots}">
+    <link rel="canonical" th:if="${canonicalUrl != null}" th:href="${canonicalUrl}">
+    <meta property="og:site_name" content="Nuobo">
+    <meta property="og:title" th:content="${pageTitle}">
+    <meta property="og:description" th:content="${pageDescription}">
+    <meta property="og:type" th:content="${pageType}">
+    <meta property="og:url" th:content="${pageUrl}">
+    <meta property="og:image" th:content="${pageImage}">
+    <meta property="og:image:alt" content="Nuobo wholesale holiday inflatables">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" th:content="${pageTitle}">
+    <meta name="twitter:description" th:content="${pageDescription}">
+    <meta name="twitter:image" th:content="${pageImage}">
+    <meta name="_csrf" th:content="${_csrf?.token}">
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=202605282010">
+    <link rel="stylesheet" href="/css/style.css?v=20261013-editorial-v3">
+    <link rel="stylesheet" href="/css/global-effects.css?v=20261013-globe-v1">
+    <link rel="stylesheet" href="/css/admin.css?v=20261013-auth-nav-v1">
+    <link rel="stylesheet" href="/css/vendor/ui-runtime.css?v=20261013-compact-v1">
+    <link rel="stylesheet" href="/css/home-compact.css?v=20261013-compact-v1">
+    <link rel="stylesheet" href="/css/three-experience.css?v=20261013-three-v1">
+    <link rel="stylesheet" href="/css/home-expanded.css?v=20261013-auth-nav-v1">
+    <link rel="stylesheet" href="/css/search-upgrade.css?v=20261014-search-v1">
+    <link rel="stylesheet" href="/css/product-readiness.css?v=20261014-product-v1">
+    <link rel="stylesheet" href="/css/trust-upgrade.css?v=20261014-trust-v1">
+    <link rel="stylesheet" href="/css/performance-upgrade.css?v=20261014-perf-v1">
+    <script async src="/js/main.js?v=20261014-perf-v3"></script>
+</head>
+<body>
+<header th:fragment="navbar" class="site-header">
+    <div class="service-strip"><div class="container service-strip-inner"><span>Factory-direct holiday inflatables</span><span>OEM / ODM support</span><span>Export-ready packing</span><a href="/inquiry">Send a bulk inquiry <span aria-hidden="true">&rarr;</span></a></div></div>
+    <div class="container nav-wrap">
+        <a href="/" class="brand" aria-label="Nuobo home"><img src="/images/logo.svg?v=202605282010" alt="nuobo" width="132" height="42"></a>
+        <nav class="desktop-nav" aria-label="Primary navigation">
+            <a href="/" th:classappend="${currentPage == 'home'} ? ' active' : ''">Home</a>
+            <a href="/products" th:classappend="${currentPage == 'products' || currentPage == 'search'} ? ' active' : ''">Products</a>
+            <a href="/category/christmas" th:classappend="${currentPage == 'christmas'} ? ' active' : ''">Christmas</a>
+            <a href="/category/halloween" th:classappend="${currentPage == 'halloween'} ? ' active' : ''">Halloween</a>
+            <a href="/about" th:classappend="${currentPage == 'about'} ? ' active' : ''">About</a>
+            <a href="/contact" th:classappend="${currentPage == 'contact'} ? ' active' : ''">Contact</a>
+            <a href="/inquiry" class="nav-inquiry" th:classappend="${currentPage == 'inquiry'} ? ' active' : ''">Wholesale <span id="inquiryNavCount" class="nav-count nav-count-blue" hidden>0</span></a>
+        </nav>
+        <div class="nav-tools">
+            <a class="nav-tool" href="/search" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg></a>
+            <a class="nav-tool nav-cart" href="/cart" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l2 11h9l3-8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg><span id="cartCount" class="nav-count" th:text="${session.cart?.size() ?: 0}">0</span></a>
+            <a href="/login" class="nav-login" sec:authorize="!isAuthenticated()">Log in</a>
+            <a href="/account" class="nav-login" sec:authorize="isAuthenticated()">Account</a>
+            <a href="/admin/dashboard" class="nav-login nav-admin" sec:authorize="hasRole('ADMIN')" aria-label="Admin dashboard">Admin</a>
+            <form class="nav-logout" method="post" th:action="@{/logout}" sec:authorize="isAuthenticated()"><input type="hidden" name="_csrf" th:value="${_csrf?.token}"><button type="submit">Log out</button></form>
+        </div>
+        <button class="menu-toggle" id="hamburger" type="button" aria-label="Open navigation" aria-controls="mobileMenu" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+    <nav id="mobileMenu" class="mobile-nav" aria-label="Mobile navigation">
+        <a href="/">Home</a><a href="/products">Products</a><a href="/category/christmas">Christmas</a><a href="/category/halloween">Halloween</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/inquiry">Wholesale inquiry</a><a href="/cart">Cart <span th:text="${session.cart?.size() ?: 0}">0</span></a><a href="/login" sec:authorize="!isAuthenticated()">Log in</a><a href="/account" sec:authorize="isAuthenticated()">Account</a>
+        <a href="/admin/dashboard" sec:authorize="hasRole('ADMIN')">Admin</a><form class="nav-logout" method="post" th:action="@{/logout}" sec:authorize="isAuthenticated()"><input type="hidden" name="_csrf" th:value="${_csrf?.token}"><button type="submit">Log out</button></form>
+    </nav>
+    <div id="nuobo-el-root" aria-live="polite"></div>
+</header>
+<footer th:fragment="footer" class="site-footer">
+    <div class="container footer-grid">
+        <div class="footer-brand"><img src="/images/logo.svg?v=202605282010" alt="nuobo" width="132" height="42"><p>Wholesale holiday inflatables for retailers, importers, events, and online sellers.</p><a class="footer-cta" href="/inquiry">Start a bulk inquiry <span aria-hidden="true">&rarr;</span></a></div>
+        <div><h3>Explore</h3><a href="/products">All products</a><a href="/category/christmas">Christmas</a><a href="/category/halloween">Halloween</a><a href="/about">About Nuobo</a></div>
+        <div><h3>Support</h3><a href="/contact">Contact sales</a><a href="/faq">Wholesale FAQ</a><a href="/privacy">Privacy policy</a><a href="/return-policy">Return policy</a></div>
+        <div class="footer-note"><span class="footer-label">Built for international buyers</span><p>3D design, production, quality control, and export support from Yiwu, China.</p><div class="footer-badges"><span>OEM / ODM</span><span>QC checked</span><span>Global shipping</span></div></div>
+    </div>
+    <div class="container footer-bottom"><span>&copy; 2026 Nuobo. All rights reserved.</span><span>Holiday decoration supply made clearer.</span></div>
+</footer>
+</body>
+</html>

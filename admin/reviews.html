@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('评论管理')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('reviews')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Reviews</p>
+                <h1>评论管理</h1>
+                <p>管理产品评价、客户反馈和后台回复。</p>
+            </div>
+        </div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div class="admin-card admin-table-card">
+            <div class="admin-card-toolbar">
+                <div>
+                    <h3 class="admin-card-title">评论列表</h3>
+                    <p th:text="'当前共 ' + ${#lists.size(reviews)} + ' 条评论'">当前共 0 条评论</p>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table admin-data-table">
+                    <thead><tr><th>产品</th><th>用户</th><th>评分</th><th>内容</th><th>日期</th><th>审核</th><th>回复状态</th><th>操作</th></tr></thead>
+                    <tbody>
+                    <tr th:each="r : ${reviews}">
+                        <td th:text="${r.product.nameCn != null && !#strings.isEmpty(r.product.nameCn) ? r.product.nameCn : r.product.nameEn}">产品</td>
+                        <td th:text="${r.user != null ? r.user.name : r.guestName}">用户</td>
+                        <td><span class="admin-stars" th:text="${r.rating} + '/5'">5/5</span></td>
+                        <td class="admin-message-text" th:text="${r.content}">内容</td>
+                        <td class="text-gray-500" th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">日期</td>
+                        <td>
+                            <span th:if="${r.approved}" class="badge badge-paid">已通过</span>
+                            <span th:unless="${r.approved}" class="badge badge-pending-payment">待审核</span>
+                        </td>
+                        <td>
+                            <span th:if="${r.adminReply}" class="badge badge-paid">已回复</span>
+                            <span th:unless="${r.adminReply}" class="badge badge-pending-payment">未回复</span>
+                        </td>
+                        <td>
+                            <div class="admin-row-actions">
+                                <form th:if="${!r.approved}" method="post" th:action="@{/admin/reviews/approve/{id}(id=${r.id})}">
+                                    <button type="submit" class="btn btn-sm btn-gold">通过</button>
+                                </form>
+                                <button class="btn btn-outline btn-sm" type="button" th:onclick="'toggleReply(' + ${r.id} + ')'">回复</button>
+                                <form method="post" th:action="@{/admin/reviews/delete/{id}(id=${r.id})}" onsubmit="return confirm('确认删除这条评论？')">
+                                    <button type="submit" class="btn btn-sm btn-danger-soft">删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:each="r : ${reviews}" th:id="'reply-' + ${r.id}" style="display:none">
+                        <td colspan="8" class="admin-reply-row">
+                            <form method="post" th:action="@{/admin/reviews/reply/{id}(id=${r.id})}" class="admin-inline-form admin-inline-form-wide">
+                                <input type="text" name="reply" class="input" placeholder="输入后台回复内容..." th:value="${r.adminReply}" required>
+                                <button type="submit" class="btn btn-gold btn-sm">发送回复</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(reviews)}"><td colspan="8" class="text-center text-gray-500 py-4">暂无评论</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+function toggleReply(id) {
+    var row = document.getElementById('reply-' + id);
+    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+</script>
+</body>
+</html>

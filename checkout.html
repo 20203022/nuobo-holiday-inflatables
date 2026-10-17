@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="layout::head('Checkout | Nuobo')"></head>
+<body class="bg-dark text-white">
+<div id="app" class="min-h-screen flex flex-col">
+    <header th:replace="layout::navbar"></header>
+    <main class="flex-1">
+        <section class="section checkout-page">
+            <div class="ambient-grid" aria-hidden="true"></div>
+            <div class="container page-wide-container">
+                <div class="checkout-hero fade-in">
+                    <div>
+                        <p class="hero-kicker">Secure checkout</p>
+                        <h1 class="page-title" th:text="#{checkout.title}">Checkout</h1>
+                        <p>Review shipping details and keep this payment entry ready. Prices are shown in USD; online payment will be enabled after the settlement currency and payment channel are confirmed.</p>
+                    </div>
+                    <div class="checkout-steps" aria-label="Checkout progress">
+                        <span class="active">Cart</span>
+                        <span class="active">Shipping</span>
+                        <span>Payment</span>
+                    </div>
+                </div>
+
+                <div class="checkout-layout">
+                    <div class="checkout-main">
+                        <div class="profile-card checkout-card fade-in">
+                            <div class="checkout-card-head">
+                                <div>
+                                    <p class="eyebrow">Step 1</p>
+                                    <h2 th:text="#{checkout.shippingInfo}">Shipping Information</h2>
+                                </div>
+                                <span>Required</span>
+                            </div>
+                            <form id="checkoutForm" class="checkout-form">
+                                <div class="form-row-quote">
+                                    <div class="form-group">
+                                        <label class="form-label" th:text="#{checkout.fullName}">Full Name</label>
+                                        <input type="text" id="shipName" required class="input" placeholder="Receiver name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" th:text="#{checkout.phone}">Phone</label>
+                                        <input type="tel" id="shipPhone" required class="input" placeholder="+1 555 000 0000" autocomplete="tel" inputmode="tel">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" th:text="#{checkout.address}">Address</label>
+                                    <input type="text" id="shipAddress" required class="input" placeholder="Street address, building, apartment">
+                                </div>
+                                <div class="checkout-location-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" th:text="#{checkout.city}">City</label>
+                                        <input type="text" id="shipCity" required class="input" placeholder="City">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" th:text="#{checkout.state}">State</label>
+                                        <input type="text" id="shipState" required class="input" placeholder="State / province">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" th:text="#{checkout.zip}">ZIP</label>
+                                        <input type="text" id="shipZip" required class="input" placeholder="Postal code">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="shipCountry">Country / region</label>
+                                    <input type="text" id="shipCountry" name="country" required class="input" list="buyer-countries" placeholder="Country or region" autocomplete="country-name">
+                                </div>
+                                <datalist id="buyer-countries"><option>United States</option><option>Canada</option><option>United Kingdom</option><option>Germany</option><option>France</option><option>Australia</option><option>United Arab Emirates</option><option>Saudi Arabia</option><option>Singapore</option><option>Malaysia</option></datalist>
+                            </form>
+                        </div>
+
+                        <div class="checkout-assurance-grid fade-in">
+                            <div><strong>Payment entry</strong><span>Checkout details are ready for a future payment launch.</span></div>
+                            <div><strong>Sales support</strong><span>Contact sales for a manual quote or payment arrangement.</span></div>
+                            <div><strong>Support</strong><span>Sales team can follow up from the order number.</span></div>
+                        </div>
+                    </div>
+
+                    <aside class="checkout-summary-column">
+                        <div class="profile-card checkout-summary-card fade-in">
+                            <div class="checkout-card-head">
+                                <div>
+                                    <p class="eyebrow">Step 2</p>
+                                    <h2 th:text="#{checkout.summary}">Order Summary</h2>
+                                </div>
+                                <span th:text="${#lists.size(cartItems)} + ' item(s)'">0 items</span>
+                            </div>
+
+                            <div class="checkout-items">
+                                <div th:each="item : ${cartItems}" class="checkout-item">
+                                    <a th:href="@{/product/{id}(id=${item.product.id})}" class="checkout-item-img">
+                                        <img th:src="${item.product.images != null && item.product.images.size() > 0} ? ${item.product.images[0].imagePath} : '/images/placeholder.svg'" alt="">
+                                    </a>
+                                    <div>
+                                        <a th:href="@{/product/{id}(id=${item.product.id})}" th:text="${item.product.nameEn}">Item</a>
+                                        <span th:text="${item.product.model} + ' x' + ${item.quantity}">Model x1</span>
+                                    </div>
+                                    <strong th:text="'$' + ${#numbers.formatDecimal(item.subtotal, 1, 2)}">$0</strong>
+                                </div>
+                            </div>
+
+                            <div class="checkout-total-box">
+                                <div><span th:text="#{cart.subtotal}">Subtotal</span><strong th:text="'$' + ${#numbers.formatDecimal(subtotal, 1, 2)}">$0</strong></div>
+                                <div th:if="${discount != null and discount > 0}"><span>Discount</span><strong th:text="'-$' + ${#numbers.formatDecimal(discount, 1, 2)}">-$0</strong></div>
+                                <div><span th:text="#{cart.shipping}">Shipping</span><strong th:text="${shippingFee != null and shippingFee == 0 ? 'Free' : '$' + #numbers.formatDecimal(shippingFee, 1, 2)}">Calculated</strong></div>
+                                <div class="checkout-total-row"><span th:text="#{cart.total}">Total</span><strong th:text="'$' + ${#numbers.formatDecimal(total != null ? total : subtotal, 1, 2)}">$0</strong></div>
+                            </div>
+
+                            <button type="button" class="btn btn-gold w-full checkout-pay-btn" disabled aria-disabled="true">Online payment coming soon</button>
+                            <a href="/cart" class="checkout-back-link">Back to cart</a>
+                            <a href="/contact" class="btn btn-outline w-full">Contact sales instead</a>
+                            <p class="checkout-payment-note">No order or payment is submitted from this entry yet.</p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer th:replace="layout::footer"></footer>
+</div>
+<script th:inline="javascript">
+/*<![CDATA[*/
+var i18n = {
+    fillFields: /*[[#{checkout.fillFields}]]*/ 'Please fill in all shipping fields',
+    processing: /*[[#{checkout.processing}]]*/ 'Processing...',
+    payNow: /*[[#{checkout.payNow}]]*/ 'Pay with Alipay',
+    error: /*[[#{checkout.error}]]*/ 'Error'
+};
+/*]]>*/
+</script>
+<script>
+function payWithAlipay(event) {
+    const name = document.getElementById('shipName').value.trim();
+    const phone = document.getElementById('shipPhone').value.trim();
+    const address = document.getElementById('shipAddress').value.trim();
+    const city = document.getElementById('shipCity').value.trim();
+    const state = document.getElementById('shipState').value.trim();
+    const zip = document.getElementById('shipZip').value.trim();
+    const country = document.getElementById('shipCountry').value.trim();
+    if (!name || !phone || !address || !city || !state || !zip || !country) { alert(i18n.fillFields); return; }
+
+    const btn = event.currentTarget;
+    btn.disabled = true;
+    btn.textContent = i18n.processing;
+    const headers = {'Content-Type':'application/x-www-form-urlencoded'};
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+    if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+    fetch('/checkout/pay', {
+        method: 'POST',
+        headers,
+        body: new URLSearchParams({name, phone, address, city, state, zip, country})
+    }).then(async r => {
+        if (!r.ok || r.redirected) throw new Error('Payment could not be started. Please refresh and try again.');
+        return r.text();
+    }).then(url => {
+        if (url.startsWith('/')) window.location.href = url;
+        else if (url.startsWith('http')) window.location.href = url;
+        else { alert(i18n.error + ': ' + url); btn.disabled = false; btn.textContent = i18n.payNow; }
+    }).catch(e => { alert(i18n.error + ': ' + e); btn.disabled = false; btn.textContent = i18n.payNow; });
+}
+</script>
+</body>
+</html>

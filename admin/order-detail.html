@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('订单详情')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('orders')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <a href="/admin/orders" class="back-link">&#8592; 返回订单列表</a>
+                <p class="eyebrow">Order Detail</p>
+                <h1 th:text="${order.orderNo}">NUOBO-001</h1>
+                <p th:text="${#temporals.format(order.createdAt, 'yyyy-MM-dd HH:mm')}">日期</p>
+            </div>
+            <div class="admin-order-total-box">
+                <span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(order.status)}" th:text="${order.status.name() == 'PENDING_PAYMENT' ? '待支付' : (order.status.name() == 'PAID' ? '已付款' : (order.status.name() == 'SHIPPED' ? '已发货' : (order.status.name() == 'DELIVERED' ? '已送达' : (order.status.name() == 'CANCELLED' ? '已取消' : '已退款'))))}">状态</span>
+                <strong th:text="'$' + ${#numbers.formatDecimal(order.total, 1, 2)}">$0</strong>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="admin-order-detail-grid">
+            <section class="admin-card admin-info-card">
+                <h3 class="admin-card-title">订单信息</h3>
+                <div class="admin-detail-list">
+                    <div><span>订单状态</span><strong th:text="${order.status.name() == 'PENDING_PAYMENT' ? '待支付' : (order.status.name() == 'PAID' ? '已付款' : (order.status.name() == 'SHIPPED' ? '已发货' : (order.status.name() == 'DELIVERED' ? '已送达' : (order.status.name() == 'CANCELLED' ? '已取消' : '已退款'))))}">状态</strong></div>
+                    <div><span>商品小计</span><strong th:text="'$' + ${#numbers.formatDecimal(order.subtotal, 1, 2)}">$0</strong></div>
+                    <div><span>优惠金额</span><strong th:text="'$' + ${#numbers.formatDecimal(order.discountAmount, 1, 2)}">$0</strong></div>
+                    <div><span>运费</span><strong th:text="'$' + ${#numbers.formatDecimal(order.shippingFee, 1, 2)}">$0</strong></div>
+                    <div><span>订单总额</span><strong class="text-gold" th:text="'$' + ${#numbers.formatDecimal(order.total, 1, 2)}">$0</strong></div>
+                </div>
+            </section>
+
+            <section class="admin-card admin-info-card">
+                <h3 class="admin-card-title">收货信息</h3>
+                <div class="admin-detail-list">
+                    <div><span>收货人</span><strong th:text="${order.shippingName}">姓名</strong></div>
+                    <div><span>电话</span><strong th:text="${order.shippingPhone}">电话</strong></div>
+                    <div><span>国家 / 地址</span><strong th:text="${order.shippingAddress + ', ' + order.shippingCity + ', ' + order.shippingState + ' ' + order.shippingZip}">地址</strong></div>
+                    <div th:if="${order.trackingNumber}"><span>物流</span><strong th:text="${order.trackingCompany + ' - ' + order.trackingNumber}">物流</strong></div>
+                </div>
+            </section>
+        </div>
+
+        <section class="admin-card admin-action-panel">
+            <div class="admin-card-toolbar">
+                <div>
+                    <h3 class="admin-card-title">订单操作</h3>
+                    <p>更新运费、发货信息、取消或退款订单。</p>
+                </div>
+            </div>
+            <div class="admin-order-actions">
+                <form method="post" th:action="@{/admin/orders/{id}/update-price(id=${order.id})}" class="admin-inline-form">
+                    <label class="form-label">运费</label>
+                    <input type="number" step="0.01" name="shippingFee" class="input" th:value="${order.shippingFee}" placeholder="运费">
+                    <button type="submit" class="btn btn-outline btn-sm">更新运费</button>
+                </form>
+                <form method="post" th:action="@{/admin/orders/{id}/ship(id=${order.id})}" class="admin-inline-form admin-inline-form-wide">
+                    <label class="form-label">发货</label>
+                    <input type="text" name="company" class="input" placeholder="物流公司" required>
+                    <input type="text" name="trackingNo" class="input" placeholder="物流单号" required>
+                    <button type="submit" class="btn btn-gold btn-sm">标记发货</button>
+                </form>
+                <form method="post" th:action="@{/admin/orders/{id}/cancel(id=${order.id})}" onsubmit="return confirm('确认取消该订单？')">
+                    <button type="submit" class="btn btn-sm btn-danger-soft">取消订单</button>
+                </form>
+                <form method="post" th:action="@{/admin/orders/{id}/refund(id=${order.id})}" onsubmit="return confirm('确认调用支付平台退款？退款成功后订单状态才会更新。')">
+                    <button type="submit" class="btn btn-sm btn-danger-soft" th:disabled="${order.paymentStatus.name() != 'PAID'}">申请退款</button>
+                </form>
+                <form method="post" th:action="@{/admin/orders/{id}/email(id=${order.id})}" class="admin-inline-form">
+                    <input type="hidden" name="subject" value="您的 nuobo 订单">
+                    <input type="hidden" name="message" value="订单通知">
+                    <button type="submit" class="btn btn-outline btn-sm">发送邮件</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

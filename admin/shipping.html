@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout::head('运费设置')"></head>
+<body class="bg-dark text-white">
+<div class="admin-layout">
+    <div th:replace="admin/fragments::sidebar('shipping')"></div>
+    <main class="admin-main admin-main-refresh">
+        <div class="admin-page-head">
+            <div>
+                <p class="eyebrow">Shipping</p>
+                <h1>运费设置</h1>
+                <p>设置默认运费和免运费门槛，用于下单结算。</p>
+            </div>
+        </div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div class="admin-card admin-form-card">
+            <form method="post" action="/admin/shipping" class="admin-stacked-form">
+                <div class="admin-form-grid two">
+                    <div>
+                        <label class="form-label">默认运费（美元）</label>
+                        <input type="number" step="0.01" name="shippingFee" class="input" th:value="${shippingFee}" required>
+                    </div>
+                    <div>
+                        <label class="form-label">免运费门槛（美元）</label>
+                        <input type="number" step="0.01" name="freeShippingThreshold" class="input" th:value="${freeShippingThreshold}" required>
+                        <p class="field-hint">订单金额达到该数值后自动免运费。</p>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-gold">保存</button>
+            </form>
+        </div>
+    </main>
+</div>
+</body>
+</html>

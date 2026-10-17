@@ -1,0 +1,13 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const file = path.resolve(__dirname, '..', 'index.html');
+const source = fs.readFileSync(file, 'utf8');
+const start = source.indexOf('  <section class="world-stage"');
+const end = source.indexOf('</section>', start) + '</section>'.length;
+if (start < 0 || end <= start) throw new Error('Global section was not found');
+const section = source.slice(start, end);
+const remaining = source.slice(0, start) + source.slice(end);
+const heading = remaining.indexOf('Standout characters');
+const insertion = remaining.lastIndexOf('  <section', heading);
+if (heading < 0 || insertion < 0) throw new Error('Best sellers section was not found');
+fs.writeFileSync(file, remaining.slice(0, insertion) + section + '\n\n' + remaining.slice(insertion));

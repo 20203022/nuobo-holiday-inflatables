@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="sidebar(activePage)">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <h2 class="text-gold">nuobo 管理后台</h2>
+        </div>
+        <nav class="admin-nav">
+            <a th:classappend="${activePage == 'dashboard'} ? 'active' : ''" href="/admin/dashboard"><span class="admin-nav-icon">D</span><span class="admin-nav-label">仪表盘</span></a>
+            <a th:classappend="${activePage == 'orders'} ? 'active' : ''" href="/admin/orders"><span class="admin-nav-icon">O</span><span class="admin-nav-label">订单管理</span></a>
+            <a th:classappend="${activePage == 'products'} ? 'active' : ''" href="/admin/products"><span class="admin-nav-icon">P</span><span class="admin-nav-label">产品管理</span></a>
+            <a th:classappend="${activePage == 'coupons'} ? 'active' : ''" href="/admin/coupons"><span class="admin-nav-icon">%</span><span class="admin-nav-label">优惠券</span></a>
+            <a th:classappend="${activePage == 'reviews'} ? 'active' : ''" href="/admin/reviews"><span class="admin-nav-icon">R</span><span class="admin-nav-label">评论管理</span></a>
+            <a th:classappend="${activePage == 'messages'} ? 'active' : ''" href="/admin/messages"><span class="admin-nav-icon">@</span><span class="admin-nav-label">询盘线索</span></a>
+            <a th:classappend="${activePage == 'shipping'} ? 'active' : ''" href="/admin/shipping"><span class="admin-nav-icon">$</span><span class="admin-nav-label">运费设置</span></a>
+            <a th:classappend="${activePage == 'pages'} ? 'active' : ''" href="/admin/pages"><span class="admin-nav-icon">C</span><span class="admin-nav-label">内容管理</span></a>
+            <a th:classappend="${activePage == 'settings'} ? 'active' : ''" href="/admin/settings"><span class="admin-nav-icon">S</span><span class="admin-nav-label">网站设置</span></a>
+            <a th:classappend="${activePage == 'users'} ? 'active' : ''" href="/admin/users"><span class="admin-nav-icon">U</span><span class="admin-nav-label">用户管理</span></a>
+        </nav>
+        <div class="admin-sidebar-footer"><a href="/" class="admin-view-site">&#8592; 返回前台</a><form class="admin-logout" method="post" th:action="@{/logout}"><input type="hidden" name="_csrf" th:value="${_csrf?.token}"><button type="submit">退出登录</button></form></div>
+    </aside>
+</div>
+
+</body>
+</html>
